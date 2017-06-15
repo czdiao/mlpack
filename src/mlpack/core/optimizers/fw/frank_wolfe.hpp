@@ -16,8 +16,9 @@
 #include <mlpack/prereqs.hpp>
 #include "update_classic.hpp"
 #include "update_span.hpp"
+#include "update_linesearch.hpp"
 #include "constr_lpball.hpp"
-#include "test_func_sq.hpp"
+#include "func_sq.hpp"
 
 namespace mlpack {
 namespace optimization {
@@ -123,7 +124,7 @@ class FrankWolfe
   double Optimize(arma::mat& iterate);
 
   //! Get the instantiated function to be optimized.
-  const FunctionType& Function() const { return function; }  	// Chenzhe: why return const?
+  const FunctionType& Function() const { return function; }
   //! Modify the instantiated function.
   FunctionType& Function() { return function; }
 
@@ -164,7 +165,8 @@ class FrankWolfe
   double tolerance;
 };
 
-using OMP = FrankWolfe<TestFuncSq, ConstrLpBallSolver, UpdateSpan<TestFuncSq>>;
+//! Orthogonal Matching Pursuit
+using OMP = FrankWolfe<FuncSq, ConstrLpBallSolver, UpdateSpan<FuncSq>>;
 
 } // namespace optimization
 } // namespace mlpack

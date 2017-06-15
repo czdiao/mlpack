@@ -1,27 +1,26 @@
 /**
- * @file test_func_sq.hpp
+ * @file func_sq.hpp
  * @author Chenzhe Diao
  *
- * Update method for FrankWolfe algorithm, recalculate the optimal in the span
- * of previous solution space. Used as UpdateRuleType.
+ * Square loss function: \f$ x-> 0.5 * || Ax - b ||_2^2 \f$.
  *
  * mlpack is free software; you may redistribute it and/or modify it under the
  * terms of the 3-clause BSD license.  You should have received a copy of the
  * 3-clause BSD license along with mlpack.  If not, see
  * http://www.opensource.org/licenses/BSD-3-Clause for more information.
  */
-#ifndef MLPACK_CORE_OPTIMIZERS_FW_TEST_FUNC_SQ_HPP
-#define MLPACK_CORE_OPTIMIZERS_FW_TEST_FUNC_SQ_HPP
+#ifndef MLPACK_CORE_OPTIMIZERS_FW_FUNC_SQ_HPP
+#define MLPACK_CORE_OPTIMIZERS_FW_FUNC_SQ_HPP
 
 #include <mlpack/prereqs.hpp>
 
 namespace mlpack {
 namespace optimization {
 
-class TestFuncSq
+class FuncSq
 {
  public:
-  TestFuncSq(const arma::mat A, const arma::mat b ) : A(A), b(b)  
+  FuncSq(const arma::mat A, const arma::mat b ) : A(A), b(b)
   {/* Nothing to do. */}
 
   double Evaluate(const arma::mat& coords)

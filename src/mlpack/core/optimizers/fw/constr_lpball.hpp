@@ -32,7 +32,7 @@ namespace optimization {
  *
  * For \f$ 1<p<\infty \f$: the solution is
  * \f[
- * s_j = -sign(v_j) |v_j|^{p-1}
+ * t_j = -sign(v_j) |v_j|^{p-1}, \qquad s = t/||t||^q
  * \f]
  *
  * For \f$ p=\infty \f$: the solution is
@@ -55,48 +55,56 @@ class ConstrLpBallSolver
   ConstrLpBallSolver(const double p) : p(p)
   { /* Do nothing. */ }
 
+  //! Get the p-norm.
+  double P() const { return p; }
+  //! Modify the p-norm.
+  double& P() { return p;}
+
  /**
   * Optimizer of Linear Constrained Problem for FrankWolfe.
   *
   * @param v Input local gradient.
   * @param s Output optimal solution in the constrained domain (lp ball).
   */
-  void Optimize(const arma::mat& v,
-	  arma::mat& s)
+  void Optimize(const arma::mat& v, arma::mat& s)
   {
 
-      if (p==-1.0)
-      {
-	  // l-inf ball
-	  s = -sign(v);
-	  return;
-      }
-      else if(p>1.0)
-      {
-	  // lp ball with 1<p<inf
-	  s = -sign(v) % pow(abs(v), p-1);
-	  return;
-      }
-      else if(p==1.0)
-      {
-	  // l1 ball, used in OMP
-	  arma::mat tmp = abs(v);
-	  arma::uword k = tmp.index_max();  // linear index of matrix
-	  tmp = 0 * tmp;
-	  tmp(k) = v(k);
-	  s = -sign(tmp);
-	  return;
-      }
-      else
-      {
-	  Log::Fatal << "Wrong norm p!" << std::endl;
-	  return;
-      }
+	  if (p==-1.0)
+	  {
+		  // l-inf ball
+		  s = -sign(v);
+		  return;
+	  }
+	  else if(p>1.0)
+	  {
+		  // lp ball with 1<p<inf
+		  s = -sign(v) % pow(abs(v), p-1);
+          double q = 1/(1.0-1.0/p);
+          arma::mat qnorm = pow(sum(pow(abs(s), q)), 1/q);
+          double qnormv = qnorm(0, 0);
+          s = s/qnormv;
+		  return;
+	  }
+	  else if(p==1.0)
+	  {
+		  // l1 ball, used in OMP
+		  arma::mat tmp = abs(v);
+		  arma::uword k = tmp.index_max();  // linear index of matrix
+		  tmp = 0 * tmp;
+		  tmp(k) = v(k);
+		  s = -sign(tmp);
+		  return;
+	  }
+	  else
+	  {
+		  Log::Fatal << "Wrong norm p!" << std::endl;
+		  return;
+	  }
 
   }
 
  private:
-  // lp norm, take 1<p<inf, use -1 for inf norm.
+  //! lp norm, take 1<=p<=inf, use -1 for inf norm.
   double p;
 };
 

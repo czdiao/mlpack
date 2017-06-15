@@ -28,10 +28,11 @@ namespace optimization {
  *
  * FunctionType:
  *
- *   double Evaluate(const arma::mat& coordinates);
- *   void Gradient(const arma::mat& coordinates,
- *                 arma::mat& gradient);
+ *   arma::mat MatrixA()
+ *   arma::vec Vectorb()
  *
+ * MatrixA() returns a matrix with all the atoms as its columns. Vectorb() returns a
+ * vector we want to approximate with the atoms.
  *
  * @tparam FunctionType Objective function type to be minimized in FrankWolfe algorithm.
  */
@@ -51,6 +52,8 @@ class UpdateSpan
 
  /**
   * Update rule for FrankWolfe, reoptimize in the span of original solution space.
+  * This class also keeps record of all previously used atoms, this function also
+  * add a new atom into the record.
   *
   *
   * @param old_coords previous solution coords.
@@ -63,7 +66,7 @@ class UpdateSpan
 	  arma::mat& new_coords,
 	  const size_t num_iter)
   {
-      //Need to add atom here
+      // add atom to the solution space here.
       arma::uvec ind = find(s, 1);
       arma::uword d = ind(0);
       AddAtom(d);
@@ -91,38 +94,7 @@ class UpdateSpan
   //! Modify the current atoms.
   arma::mat& CurrentAtoms() { return atoms_current; }
 
-  //! Add atom into the solution space, modify the current_indices and atoms_current.
-  void AddAtom(const arma::uword k) 
-  {
-      if (isEmpty){
-	  CurrentIndices() = k;
-	  CurrentAtoms() = (function.MatrixA()).col(k);
-	  isEmpty = false;
-      }
-      else{
-	  arma::uvec vk(1);
-	  vk = k;
-	  current_indices.insert_rows(0, vk);  
 
-	  arma::mat atom = (function.MatrixA()).col(k);
-	  atoms_current.insert_cols(0, atom);
-	  
-      }
-  }
-
-  arma::vec RecoverVector(const arma::vec& x )
-  {
-      int n = (function.MatrixA()).n_cols;
-      arma::vec y = arma::zeros<arma::vec>(n);
-
-      arma::uword len = current_indices.size();
-      for (size_t ii = 0; ii < len; ++ii)
-      {
-	  y(current_indices(ii)) = x(ii);
-      }
-
-      return y;
-  }
 
  private:
   //! The instantiated function.
@@ -136,6 +108,40 @@ class UpdateSpan
 
   //! Flag current indices is empty
   bool isEmpty=true;
+    
+    
+    //! Add atom into the solution space, modify the current_indices and atoms_current.
+    void AddAtom(const arma::uword k)
+    {
+        if (isEmpty){
+            CurrentIndices() = k;
+            CurrentAtoms() = (function.MatrixA()).col(k);
+            isEmpty = false;
+        }
+        else{
+            arma::uvec vk(1);
+            vk = k;
+            current_indices.insert_rows(0, vk);
+            
+            arma::mat atom = (function.MatrixA()).col(k);
+            atoms_current.insert_cols(0, atom);
+            
+        }
+    }
+    
+    arma::vec RecoverVector(const arma::vec& x )
+    {
+        int n = (function.MatrixA()).n_cols;
+        arma::vec y = arma::zeros<arma::vec>(n);
+        
+        arma::uword len = current_indices.size();
+        for (size_t ii = 0; ii < len; ++ii)
+        {
+            y(current_indices(ii)) = x(ii);
+        }
+        
+        return y;
+    }
 
 };
 
