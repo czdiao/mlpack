@@ -135,8 +135,8 @@ public:
         {
             y(i) = v(ind_list(i));
         }
-        return y;
         
+        return y;
     }
     
 	arma::vec OptimalFromGroup(const arma::vec& yk, const size_t GroupId)
