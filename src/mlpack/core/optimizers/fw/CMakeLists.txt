@@ -6,6 +6,7 @@ set(SOURCES
   constr_matrix_lp.hpp
   update_classic.hpp
   update_span.hpp
+  update_span_impl.hpp
   update_linesearch.hpp
   func_sq.hpp
 )

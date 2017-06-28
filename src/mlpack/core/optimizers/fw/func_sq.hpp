@@ -35,6 +35,25 @@ class FuncSq
       arma::vec r = A*coords - b;
       gradient = A.t() * r;
   }
+    
+    double EvaluateFunc(const arma::mat& coords,
+                        const arma::mat& AA,
+                        const arma::vec& bb)
+    {
+        arma::vec r = AA*coords - bb;
+        arma::mat y = (r.t() * r) * 0.5;
+        return y(0,0);
+    }
+    
+    void GradientFunc(const arma::mat& coords,
+                      arma::mat& gradient,
+                      const arma::mat& AA,
+                      const arma::vec& bb)
+    {
+        arma::vec r = AA*coords - bb;
+        gradient = AA.t() * r;
+    }
+
 
 
   arma::mat MatrixA() const {return A;}

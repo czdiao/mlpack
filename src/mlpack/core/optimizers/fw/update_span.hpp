@@ -30,9 +30,25 @@ namespace optimization {
  *
  *   arma::mat MatrixA()
  *   arma::vec Vectorb()
+ *   double Evaluate(const arma::mat& coords)
+ *   void Gradient(const arma::mat& coords, arma::mat& gradient)
+ *   double EvaluateFunc(const arma::mat& coords,
+ *              const arma::mat& AA, const arma::vec& bb)
+ *   void GradientFunc(const arma::mat& coords, arma::mat& gradient,
+ *              const arma::mat& AA, const arma::vec& bb)
  *
- * MatrixA() returns a matrix with all the atoms as its columns. Vectorb() returns a
- * vector we want to approximate with the atoms.
+ *
+ * MatrixA() returns a matrix with all the atoms as its columns.
+ * Vectorb() returns a vector we want to approximate with the atoms.
+ *
+ * PruneSupport is an optional step, which is based on Algorithm 2 of:
+ * Rao, Nikhil, Parikshit Shah, and Stephen Wright.
+ * "Forward–backward greedy algorithms for atomic norm regularization." 
+ * IEEE Transactions on Signal Processing 63.21 (2015): 5798-5811.
+ *
+ * Notice that this this code solves the unconstraint update
+ * (used in l0 optimization such as OMP), while Algorithm 2 in the above paper
+ * tries to solve the constraint problem.
  *
  * @tparam FunctionType Objective function type to be minimized in FrankWolfe algorithm.
  */
@@ -46,9 +62,13 @@ class UpdateSpan
    *
    * @param function Function to be optimized in FrankWolfe algorithm.
    */
-  UpdateSpan(FunctionType& function): function(function)    
-  { /* Do nothing. */ }
-  // Chenzhe: should we use reference to function? what's the difference? 
+    UpdateSpan(FunctionType& function): function(function)
+    { /* Do nothing. */ }
+
+    UpdateSpan(FunctionType& function, bool isPrune):
+    function(function),
+    isPrune(isPrune)
+    {/* Do nothing. */}
 
  /**
   * Update rule for FrankWolfe, reoptimize in the span of original solution space.
@@ -61,23 +81,8 @@ class UpdateSpan
   * @param new_coords new output solution coords.
   * @param num_iter current iteration number
   */
-  void Update(const arma::mat& old_coords,
-	  const arma::mat& s,
-	  arma::mat& new_coords,
-	  const size_t num_iter)
-  {
-      // add atom to the solution space here.
-      arma::uvec ind = find(s, 1);
-      arma::uword d = ind(0);
-      AddAtom(d);
-
-      arma::vec b = function.Vectorb();
-      arma::mat x = solve(atoms_current, b);
-
-      new_coords = RecoverVector(x);
-  }
-
-
+  void Update(const arma::mat& old_coords,const arma::mat& s,
+	  arma::mat& new_coords, const size_t num_iter);
 
   //! Get the instantiated function to be optimized.
   FunctionType Function() const { return function; }
@@ -97,55 +102,36 @@ class UpdateSpan
 
 
  private:
-  //! The instantiated function.
-  FunctionType& function;
+    //! The instantiated function.
+    FunctionType& function;
 
-  //! Current indices.
-  arma::uvec current_indices;		
+    //! Current indices.
+    arma::uvec current_indices;
 
-  //! Current atoms.
-  arma::mat atoms_current;
+    //! Current atoms.
+    arma::mat atoms_current;
 
-  //! Flag current indices is empty
-  bool isEmpty=true;
+    //! Flag current indices is empty
+    bool isEmpty = true;
+
+    //! Flag for support prune
+    bool isPrune = false;
     
-    
+    //! Prune the support, delete previous atoms if not necessary.
+    void PruneSupport(const double F, arma::mat& x);
+
     //! Add atom into the solution space, modify the current_indices and atoms_current.
-    void AddAtom(const arma::uword k)
-    {
-        if (isEmpty){
-            CurrentIndices() = k;
-            CurrentAtoms() = (function.MatrixA()).col(k);
-            isEmpty = false;
-        }
-        else{
-            arma::uvec vk(1);
-            vk = k;
-            current_indices.insert_rows(0, vk);
-            
-            arma::mat atom = (function.MatrixA()).col(k);
-            atoms_current.insert_cols(0, atom);
-            
-        }
-    }
-    
-    arma::vec RecoverVector(const arma::vec& x )
-    {
-        int n = (function.MatrixA()).n_cols;
-        arma::vec y = arma::zeros<arma::vec>(n);
-        
-        arma::uword len = current_indices.size();
-        for (size_t ii = 0; ii < len; ++ii)
-        {
-            y(current_indices(ii)) = x(ii);
-        }
-        
-        return y;
-    }
+    void AddAtom(const arma::uword k);
+
+    //! Given short x, which is the coeff of current atoms, recover the whole vector.
+    arma::vec RecoverVector(const arma::vec& x);
 
 };
 
 } // namespace optimization
 } // namespace mlpack
+
+// Include implementation
+#include "update_span_impl.hpp"
 
 #endif
