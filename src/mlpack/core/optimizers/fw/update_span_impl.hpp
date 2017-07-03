@@ -21,6 +21,7 @@
 namespace mlpack {
 namespace optimization {
 
+    
 template<typename FunctionType>
 void UpdateSpan<FunctionType>::Update(
     const arma::mat& old_coords,
@@ -53,14 +54,16 @@ template<typename FunctionType>
 void UpdateSpan<FunctionType>::AddAtom(
     const arma::uword k)
 {
-    if (isEmpty){
+    if (isEmpty)
+    {
         CurrentIndices() = k;
         CurrentAtoms() = (function.MatrixA()).col(k);
         isEmpty = false;
     }
-    else{
+    else
+    {
         arma::uvec vk(1);
-        vk = k;
+        vk(0) = k;
         current_indices.insert_rows(0, vk);
         
         arma::mat atom = (function.MatrixA()).col(k);
@@ -68,11 +71,12 @@ void UpdateSpan<FunctionType>::AddAtom(
     }
 }
 
+
 template<typename FunctionType>
 arma::vec UpdateSpan<FunctionType>::RecoverVector(
     const arma::vec& x)
 {
-    int n = (function.MatrixA()).n_cols;
+    arma::uword n = (function.MatrixA()).n_cols;
     arma::vec y = arma::zeros<arma::vec>(n);
 
     arma::uword len = current_indices.size();
@@ -120,9 +124,6 @@ void UpdateSpan<FunctionType>::PruneSupport(
             x = new_coeff;
         }
     }
-    
-    
-    
 }
     
 }

@@ -55,7 +55,7 @@ double FrankWolfe<FunctionType, LinearConstrSolverType, UpdateRuleType>::Optimiz
     arma::mat iterate_new(iterate.n_rows, iterate.n_cols);
     double gap = 0;
 
-    for(size_t i=1; i != maxIterations; ++i)
+    for(size_t i=1; i < maxIterations; ++i)
     {
     	//Output current objective function
     	Log::Info << "Iteration " << i << ", objective "

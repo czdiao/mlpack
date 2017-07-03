@@ -73,7 +73,7 @@ class ConstrLpBallSolver
   * @param v Input local gradient.
   * @param s Output optimal solution in the constrained domain (lp ball).
   */
-  void Optimize(const arma::vec& v, arma::vec& s)
+  void Optimize(const arma::mat& v, arma::mat& s)
   {
 
 	  if (p==-1.0)
@@ -97,7 +97,7 @@ class ConstrLpBallSolver
           
 		  s = -sign(s) % pow(abs(s), p-1);  //element-wise multiplication
           double q = 1/(1.0-1.0/p);
-          double qnorm = std::pow(sum(pow(abs(s), q)), 1/q);
+          double qnorm = std::pow(arma::accu(pow(abs(s), q)), 1/q);
           s = s/qnorm;
           
           if (reg_flag) {
@@ -109,15 +109,15 @@ class ConstrLpBallSolver
 	  {
 		  // l1 ball, used in OMP
           if (reg_flag) {
-              s = abs(v/lambda);
+              s = arma::abs(v/lambda);
           }
           else {
-              s = abs(v);
+              s = arma::abs(v);
           }
           
 		  arma::uword k = s.index_max();  // linear index of matrix
 		  s = 0 * s;
-		  s(k) = - sign_double(v(k));
+		  s(k) = - sign_double( v(k) );
           if (reg_flag) {
               s = s/lambda;
           }
@@ -154,10 +154,10 @@ class ConstrLpBallSolver
 
   //! Regularization parameter, ideally it should be equal to the lp norm of each atom.
   arma::vec lambda;
-    
+
     //! Signum function for double.
-    double sign_double(double x) {return (x > 0) - (x < 0);}
-    
+    double sign_double(const double x) const {return (x > 0) - (x < 0);}
+
     
 };
 

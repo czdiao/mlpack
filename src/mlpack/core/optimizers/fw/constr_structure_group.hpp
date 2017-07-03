@@ -168,7 +168,7 @@ public:
 		else if (p>1.0){
 			// p norm, return q-norm
 			double q = 1/(1-1/p);
-            return  pow(sum(pow(abs(yk), q)), 1/q);
+            return  std::pow(sum(pow(abs(yk), q)), 1/q);
 		}
 		else if (p==1.0){
 			return max(abs(yk));
