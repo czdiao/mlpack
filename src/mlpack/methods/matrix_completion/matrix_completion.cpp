@@ -16,36 +16,39 @@ namespace mlpack {
 namespace matrix_completion {
 
 template<typename MCSolverType>
-MatrixCompletion<MCSolverType>::MatrixCompletion(const size_t m,
-                                   const size_t n,
-                                   const arma::umat& indices,
-                                   const arma::vec& values,
-                                   const size_t r) :
+MatrixCompletion<MCSolverType>::
+MatrixCompletion(const size_t m,
+                 const size_t n,
+                 const arma::umat& indices,
+                 const arma::vec& values,
+                 const size_t r) :
     m(m), n(n), indices(indices), values(values),
-    mc_solver(m, n, indices, values, r)
+    mcSolver(m, n, indices, values, r)
 {
   CheckValues();
 }
 
 template<typename MCSolverType>
-MatrixCompletion<MCSolverType>::MatrixCompletion(const size_t m,
-                                   const size_t n,
-                                   const arma::umat& indices,
-                                   const arma::vec& values,
-                                   const arma::mat& initialPoint) :
+MatrixCompletion<MCSolverType>::
+MatrixCompletion(const size_t m,
+                 const size_t n,
+                 const arma::umat& indices,
+                 const arma::vec& values,
+                 const arma::mat& initialPoint) :
     m(m), n(n), indices(indices), values(values),
-    mc_solver(m, n, indices, values, initialPoint)
+    mcSolver(m, n, indices, values, initialPoint)
 {
   CheckValues();
 }
 
 template<typename MCSolverType>
-MatrixCompletion<MCSolverType>::MatrixCompletion(const size_t m,
-                                   const size_t n,
-                                   const arma::umat& indices,
-                                   const arma::vec& values) :
+MatrixCompletion<MCSolverType>::
+MatrixCompletion(const size_t m,
+                 const size_t n,
+                 const arma::umat& indices,
+                 const arma::vec& values) :
     m(m), n(n), indices(indices), values(values),
-    mc_solver(m, n, indices, values)
+    mcSolver(m, n, indices, values)
 {
   CheckValues();
 }
@@ -74,7 +77,7 @@ void MatrixCompletion<MCSolverType>::CheckValues()
 template<typename MCSolverType>
 void MatrixCompletion<MCSolverType>::Recover(arma::mat& recovered)
 {
-    mc_solver.Recover(recovered, m, n);
+    mcSolver.Recover(recovered, m, n);
 }
 
 } // namespace matrix_completion

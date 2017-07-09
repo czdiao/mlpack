@@ -23,60 +23,62 @@
 
 namespace mlpack {
 namespace matrix_completion {
-class MatrixCompletionFWFunction
-public:
-    MatrixCompletionFWFunction(const arma::umat& indices,
-                               const arma::vec& values,
-                               const size_t m,
-                               const size_t n) :
-    indices(indices), values(values), m(m), n(n), initialPoint(m, n, arma::fill::zeros)
-    { /* Nothing to do. */ }
-    
-    MatrixCompletionFWFunction(const arma::umat& indices,
-                               const arma::vec& values,
-                               const size_t m,
-                               const size_t n,
-                               const arma::initialPoint) :
-    indices(indices), values(values), m(m), n(n), initialPoint(initialPoint)
-    { /* Nothing to do. */ }
+class MatrixCompletionFWFunction {
+ public:
+  MatrixCompletionFWFunction(const arma::umat& indices,
+                             const arma::vec& values,
+                             const size_t m,
+                             const size_t n) :
+      indices(indices), values(values), m(m), n(n),
+      initialPoint(m, n, arma::fill::zeros)
+  { /* Nothing to do. */ }
+
+  MatrixCompletionFWFunction(const arma::umat& indices,
+                             const arma::vec& values,
+                             const size_t m,
+                             const size_t n,
+                             const arma::mat initialPoint) :
+      indices(indices), values(values), m(m), n(n),
+      initialPoint(initialPoint)
+  { /* Nothing to do. */ }
 
     
-    double Evaluate(const arma::mat& X)
-    {
-        double f = 0;
-        for (arma::uword i = 0; i<indices.n_cols; i++) {
-            arma::uword rind = indices(0, i);
-            arma::uword cind = indices(1, i);
-            f += std::pow(X(rind, cind) - values(i), 2);
-        }
-        return 0.5*f;
+  double Evaluate(const arma::mat& X)
+  {
+    double f = 0;
+    for (arma::uword i = 0; i<indices.n_cols; i++) {
+      arma::uword rind = indices(0, i);
+      arma::uword cind = indices(1, i);
+      f += std::pow(X(rind, cind) - values(i), 2);
+    }
+    return 0.5*f;
+  }
+  
+  void Gradient(const arma::mat& X, arma::mat& gradient)
+  {
+    arma::vec gradientVal = -values;
+    for (arma::uword i = 0; i<indices.n_cols; i++) {
+      arma::uword rind = indices(0, i);
+      arma::uword cind = indices(1, i);
+      gradientVal(i) += X(rind, cind);
     }
     
-    void Gradient(const arma::mat& X, arma::mat& gradient)
-    {
-        arma::vec gradient_val = values;
-        for (arma::uword i = 0; i<indices.n_cols; i++) {
-            arma::uword rind = indices(0, i);
-            arma::uword cind = indices(1, i);
-            gradient_val(i) = X(rind, cind) - values(i);
-        }
-        
-        arma::sp_mat sp_gradient(indices, gradient_val);
-        gradient = arma::mat(sp_gradient);
-    }
+    arma::sp_mat spGradient(indices, gradientVal);
+    gradient = arma::mat(spGradient);
+  }
 
 private:
-    //! Indices for sparse matrix.
-    arma::umat indices;
-    //! Values for sparse matrix.
-    arma::vec values;
-    //! Number of rows of the matrix.
-    size_t m;
-    //! Number of columns of the matrix.
-    size_t n;
-    //! Initial point of iterations.
-    arma::mat initialPoint;
-    
+  //! Indices for sparse matrix.
+  arma::umat indices;
+  //! Values for sparse matrix.
+  arma::vec values;
+  //! Number of rows of the matrix.
+  size_t m;
+  //! Number of columns of the matrix.
+  size_t n;
+  //! Initial point of iterations.
+  arma::mat initialPoint;
+};
 }  // namespace matrix_completion
 }  // namespace mlpack
 

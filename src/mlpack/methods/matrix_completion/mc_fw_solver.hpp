@@ -41,12 +41,12 @@ public:
             optimization::UpdateSpan<MatrixCompletionFWFunction>>(
                         function, constr_solver, update_rule);
     }
-    
+  
     MCFWSolver(const size_t m,
                 const size_t n,
                 const arma::umat& indices,
                 const arma::vec& values,
-                const arma::mat& initialPoint)
+                const arma::mat& initialPoint) :
     function(indices, values, m, n, initialPoint)
     {
         ConstrMatrixLpBallSolver constr_solver(1);
@@ -62,7 +62,7 @@ public:
     MCFWSolver(const size_t m,
                 const size_t n,
                 const arma::umat& indices,
-                const arma::vec& values)
+                const arma::vec& values) :
     function(indices, values, m, n)
     {
         ConstrMatrixLpBallSolver constr_solver(1);
@@ -81,12 +81,12 @@ public:
     }
 
 private:
-    MatrixCompletionFWFunction function(indices, values, m, n);
+    MatrixCompletionFWFunction function;
     size_t r;
     
     optimization::FrankWolfe<MatrixCompletionFWFunction,
         optimization::ConstrMatrixLpBallSolver,
-    optimization::UpdateSpan<MatrixCompletionFWFunction>> fw_solver;
+        optimization::UpdateSpan<MatrixCompletionFWFunction>> fw_solver;
 };
 } // namespace matrix_completion
 } // namespace mlpack

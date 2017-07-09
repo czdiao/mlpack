@@ -114,9 +114,9 @@ class MatrixCompletion
   void Recover(arma::mat& recovered);
 
   //! Return the underlying SDP.
-  const MCSolverType& MCSolver() const { return mc_solver; }
+  const MCSolverType& MCSolver() const { return mcSolver; }
   //! Modify the underlying SDP.
-  MCSolverType& MCSolver() { return mc_solver; }
+  MCSolverType& MCSolver() { return mcSolver; }
 
  private:
   //! Number of rows in original matrix.
@@ -128,8 +128,8 @@ class MatrixCompletion
   //! Vector containing the values of the known entries.
   arma::mat values;
 
-  //! The underlying SDP to be solved.
-  MCSolverType mc_solver;
+  //! The underlying matrix completion optimization solver.
+  MCSolverType mcSolver;
 
   //! Validate the input matrices.
   void CheckValues();
