@@ -74,7 +74,6 @@ public:
                             function, constr_solver, update_rule);
     }
 
-    
     void Recover(arma::mat& recovered, const size_t m, const size_t n)
     {
         fw_solver.Optimize(arma::mat& recovered);
