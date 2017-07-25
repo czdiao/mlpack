@@ -63,8 +63,7 @@ PROGRAM_INFO("Perceptron",
     "data must match.  So you cannot pass a perceptron model trained on 2 "
     "classes and then re-train with a 4-class dataset.  Similarly, attempting "
     "classification on a 3-dimensional dataset with a perceptron that has been "
-    "trained on 8 dimensions will cause an error."
-    );
+    "trained on 8 dimensions will cause an error.");
 
 // When we save a model, we must also save the class mappings.  So we use this
 // auxiliary structure to store both the perceptron and the mapping, and we'll
@@ -94,8 +93,8 @@ class PerceptronModel
 PARAM_MATRIX_IN("training", "A matrix containing the training set.", "t");
 PARAM_UROW_IN("labels", "A matrix containing labels for the training set.",
     "l");
-PARAM_INT_IN("max_iterations","The maximum number of iterations the perceptron "
-    "is to be run", "n", 1000);
+PARAM_INT_IN("max_iterations", "The maximum number of iterations the "
+    "perceptron is to be run", "n", 1000);
 
 // Model loading/saving.
 PARAM_MODEL_IN(PerceptronModel, "input_model", "Input perceptron model.", "m");
@@ -181,6 +180,7 @@ int main(int argc, char** argv)
     // Normalize the labels.
     Row<size_t> labels;
     data::NormalizeLabels(labelsIn, labels, p.Map());
+    const size_t numClasses = p.Map().n_elem;
 
     // Now, if we haven't already created a perceptron, do it.  Otherwise, make
     // sure the dimensions are right, then continue training.
@@ -188,8 +188,7 @@ int main(int argc, char** argv)
     {
       // Create and train the classifier.
       Timer::Start("training");
-      p.P() = Perceptron<>(trainingData, labels, max(labels) + 1,
-          maxIterations);
+      p.P() = Perceptron<>(trainingData, labels, numClasses, maxIterations);
       Timer::Stop("training");
     }
     else
@@ -206,18 +205,18 @@ int main(int argc, char** argv)
       }
 
       // Check the number of labels.
-      if (max(labels) + 1 > p.P().Weights().n_cols)
+      if (numClasses > p.P().Weights().n_cols)
       {
         Log::Fatal << "Perceptron from '"
             << CLI::GetUnmappedParam<PerceptronModel>("input_model") << "' has "
             << p.P().Weights().n_cols << " classes, but the training data has "
-            << max(labels) + 1 << " classes!" << endl;
+            << numClasses + 1 << " classes!" << endl;
       }
 
       // Now train.
       Timer::Start("training");
       p.P().MaxIterations() = maxIterations;
-      p.P().Train(trainingData, labels.t());
+      p.P().Train(trainingData, labels.t(), numClasses);
       Timer::Stop("training");
     }
   }

@@ -44,29 +44,24 @@ namespace optimization {
  * \f]
  *
  *
- * The algorithm continues until \f$ k \f$ reaches the maximum number of iterations, 
- * or when the duality gap is bounded by a certain tolerance \f$ \epsilon \f$. 
+ * The algorithm continues until \f$ k \f$ reaches the maximum number of
+ * iterations, or when the duality gap is bounded by a certain tolerance
+ * \f$ \epsilon \f$.
  * That is,
  *
  * \f[
  * g(x):= \max_{s\in D} <x-s, \nabla f(x)> \quad \leq \epsilon,
  * \f]
  *
- * we also know that \f$ g(x) \geq f(x) - f(x^*) \f$, where \f$ x^* \f$ is the optimal 
- * solution.
+ * we also know that \f$ g(x) \geq f(x) - f(x^*) \f$, where \f$ x^* \f$ is the
+ * optimal solution.
  *
  * The parameter \f$ \epsilon \f$ is specified by the tolerance parameter to the
  * constructor.
  *
- * For FrankWolfe to work, FunctionType, LinearConstrSolverType and UpdateRuleType 
+ * For FrankWolfe to work, LinearConstrSolverType and UpdateRuleType
  * template parameters are required.
  * These classes must implement the following functions:
- *
- * FunctionType:
- *
- *   double Evaluate(const arma::mat& coordinates);
- *   void Gradient(const arma::mat& coordinates,
- *                 arma::mat& gradient);
  *
  * LinearConstrSolverType:
  *
@@ -80,17 +75,13 @@ namespace optimization {
  *               arma::mat& new_coords,
  *               const size_t num_iter);
  *
- * @tparam FunctionType Objective function type to be
- *     minimized.
  * @tparam LinearConstrSolverType Solver for the linear constrained problem.
  * @tparam UpdateRuleType Rule to update the solution in each iteration.
  *
  */
 template<
-    typename FunctionType, 
-    typename LinearConstrSolverType, 
-    typename UpdateRuleType
->
+    typename LinearConstrSolverType,
+    typename UpdateRuleType>
 class FrankWolfe
 {
  public:
@@ -100,43 +91,46 @@ class FrankWolfe
    * at the initialization of linear_constr_solver, the function to be  
    * optimized is stored in update_rule.
    *
-   * @param function Function to be optimized
-   * @param linear_constr_solver Solver for linear constrained problem.
-   * @param update_rule Rule for updating solution in each iteration.
+   * @param linearConstrSolver Solver for linear constrained problem.
+   * @param updateRule Rule for updating solution in each iteration.
    * @param maxIterations Maximum number of iterations allowed (0 means no
    *     limit).
    * @param tolerance Maximum absolute tolerance to terminate algorithm.
    */
-  FrankWolfe( FunctionType& function,
-	const LinearConstrSolverType linear_constr_solver,
-        const UpdateRuleType update_rule,
-        const size_t maxIterations = 100000,
-        const double tolerance = 1e-5);
+  FrankWolfe(const LinearConstrSolverType linearConstrSolver,
+             const UpdateRuleType updateRule,
+             const size_t maxIterations = 100000,
+             const double tolerance = 1e-10);
 
   /**
    * Optimize the given function using FrankWolfe.  The given starting
-   * point will be modified to store the finishing point of the algorithm, and
+   * point will be modified to store the finishing point of the algorithm,
    * the final objective value is returned.
    *
-   * @param iterate Starting point (will be modified).
-   * @return Objective value of the final point.
+   * FunctionType template class must provide the following functions:
+   *
+   *   double Evaluate(const arma::mat& coordinates);
+   *   void Gradient(const arma::mat& coordinates,
+   *                 arma::mat& gradient);
+   *
+   * @param function Function to be optimized.
+   * @param iterate Input with starting point, and will be modified to save 
+   *                the output optimial solution coordinates.
+   * @return Objective value at the final solution.
    */
-  double Optimize(arma::mat& iterate);
-
-  //! Get the instantiated function to be optimized.
-  const FunctionType& Function() const { return function; }
-  //! Modify the instantiated function.
-  FunctionType& Function() { return function; }
+  template<typename FunctionType>
+  double Optimize(FunctionType& function, arma::mat& iterate);
 
   //! Get the linear constrained solver.
-  LinearConstrSolverType LinearConstrSolver() const { return linear_constr_solver; }
+  const LinearConstrSolverType& LinearConstrSolver()
+      const { return linearConstrSolver; }
   //! Modify the linear constrained solver.
-  LinearConstrSolverType& LinearConstrSolver() { return linear_constr_solver; }
+  LinearConstrSolverType& LinearConstrSolver() { return linearConstrSolver; }
 
   //! Get the update rule.
-  UpdateRuleType UpdateRule() const { return update_rule; }
+  const UpdateRuleType& UpdateRule() const { return updateRule; }
   //! Modify the update rule.
-  UpdateRuleType& UpdateRule() { return update_rule; }
+  UpdateRuleType& UpdateRule() { return updateRule; }
 
   //! Get the maximum number of iterations (0 indicates no limit).
   size_t MaxIterations() const { return maxIterations; }
@@ -149,14 +143,11 @@ class FrankWolfe
   double& Tolerance() { return tolerance; }
 
  private:
-  //! The instantiated function.
-  FunctionType& function;
-  
   //! The solver for constrained linear problem in first step.
-  LinearConstrSolverType linear_constr_solver;
+  LinearConstrSolverType linearConstrSolver;
 
   //! The rule to update, used in the second step.
-  UpdateRuleType update_rule;
+  UpdateRuleType updateRule;
 
   //! The maximum number of allowed iterations.
   size_t maxIterations;
@@ -165,8 +156,14 @@ class FrankWolfe
   double tolerance;
 };
 
-//! Orthogonal Matching Pursuit
-using OMP = FrankWolfe<FuncSq, ConstrLpBallSolver, UpdateSpan<FuncSq>>;
+/** 
+ * Orthogonal Matching Pursuit. It is a sparse approximation algorithm which
+ * involves finding the "best matching" projections of multidimensional data
+ * onto the span of an over-complete dictionary. To use it, the dictionary is
+ * input as the columns of MatrixA() in FuncSq class, and the vector to be
+ * approximated is input as the Vectorb() in FuncSq class.
+ */
+using OMP = FrankWolfe<ConstrLpBallSolver, UpdateSpan>;
 
 } // namespace optimization
 } // namespace mlpack

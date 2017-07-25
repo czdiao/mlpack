@@ -25,62 +25,37 @@ namespace optimization {
  * x_{k+1} = (1-\gamma) x_k + \gamma s
  * \f]
  *
- * For UpdateClassic to work, FunctionType template parameters are required.
- * This class must implement the following functions:
- *
- * FunctionType:
- *
- *   double Evaluate(const arma::mat& coordinates);
- *   void Gradient(const arma::mat& coordinates,
- *                 arma::mat& gradient);
- *
- *
- * Although the function is not used in classic update rule, we still put it
- * here since we want the same template code interface.
- *
- * @tparam FunctionType Objective function type to be minimized in FrankWolfe algorithm.
  */
-template<typename FunctionType>
 class UpdateClassic
 {
  public:
   /**
-   * Construct the classic update rule. The function to be optimized is 
-   * input here, although not used.
-   *
-   * @param function Function to be optimized in FrankWolfe algorithm.
+   * Construct the classic update rule for FrankWolfe algorithm.
    */
-  UpdateClassic(FunctionType& function): function(function)
+  UpdateClassic()
   { /* Do nothing. */ }
 
- /**
-  * Classic update rule for FrankWolfe.
-  *
-  * \f$ x_{k+1} = (1-\gamma)x_k + \gamma s \f$, where \f$ \gamma = 2/(k+2) \f$
-  *
-  * @param old_coords previous solution coords.
-  * @param s current linear_constr_solution result.
-  * @param new_coords new output solution coords.
-  * @param num_iter current iteration number
-  */
-  void Update(const arma::mat& old_coords,
-	  const arma::mat& s,
-	  arma::mat& new_coords,
-	  const size_t num_iter)
+  /**
+   * Classic update rule for FrankWolfe.
+   *
+   * \f$ x_{k+1} = (1-\gamma)x_k + \gamma s \f$, where \f$ \gamma = 2/(k+2) \f$
+   *
+   * @param function function to be optimized, not used in this update rule.
+   * @param oldCoords previous solution coords.
+   * @param s current linear_constr_solution result.
+   * @param newCoords output new solution coords.
+   * @param numIter current iteration number
+   */
+  template<typename FunctionType>
+  void Update(FunctionType& function,
+              const arma::mat& oldCoords,
+              const arma::mat& s,
+              arma::mat& newCoords,
+              const size_t numIter)
   {
-      double gamma = 2.0/(num_iter + 2.0);
-      new_coords = (1.0-gamma)*old_coords + gamma*s;
+    double gamma = 2.0 / (numIter + 2.0);
+    newCoords = (1.0 - gamma) * oldCoords + gamma * s;
   }
-
-  //! Get the instantiated function to be optimized.
-  const FunctionType& Function() const { return function; }
-  //! Modify the instantiated function.
-  FunctionType& Function() { return function; }
-
- private:
-  //! The instantiated function.
-  FunctionType& function; 
-
 };
 
 } // namespace optimization

@@ -18,57 +18,58 @@
 namespace mlpack {
 namespace optimization {
 
+//! Constructor of the FrankWolfe class.
 template<
-    typename FunctionType, 
-    typename LinearConstrSolverType, 
-    typename UpdateRuleType
->
-FrankWolfe<FunctionType, LinearConstrSolverType, UpdateRuleType>::FrankWolfe(
-    FunctionType& function,
-    const LinearConstrSolverType linear_constr_solver,
-    const UpdateRuleType update_rule,
-    const size_t maxIterations,
-    const double tolerance) :
-    function(function),
-    linear_constr_solver(linear_constr_solver),
-    update_rule(update_rule),
+    typename LinearConstrSolverType,
+    typename UpdateRuleType>
+FrankWolfe<LinearConstrSolverType, UpdateRuleType>::
+FrankWolfe(const LinearConstrSolverType linearConstrSolver,
+           const UpdateRuleType updateRule,
+           const size_t maxIterations,
+           const double tolerance) :
+    linearConstrSolver(linearConstrSolver),
+    updateRule(updateRule),
     maxIterations(maxIterations),
     tolerance(tolerance)
 { /* Nothing to do*/ }
 
 
-//! Optimize the function (minimize).  
+//! Optimize the function (minimize).
 template<
-    typename FunctionType, 
-    typename LinearConstrSolverType, 
-    typename UpdateRuleType
->
-double FrankWolfe<FunctionType, LinearConstrSolverType, UpdateRuleType>::Optimize(
-    arma::mat& iterate)
+    typename LinearConstrSolverType,
+    typename UpdateRuleType>
+template<typename FunctionType>
+double FrankWolfe<LinearConstrSolverType, UpdateRuleType>::
+Optimize(FunctionType& function, arma::mat& iterate)
 {
-    // To keep track of the function value
-    double CurrentObjective = function.Evaluate(iterate);
-    double PreviousObjective = DBL_MAX;
+  // To keep track of the function value.
+  double currentObjective = function.Evaluate(iterate);
 
-    arma::mat gradient(iterate.n_rows, iterate.n_cols);
-    arma::mat s(iterate.n_rows, iterate.n_cols);
-    arma::mat iterate_new(iterate.n_rows, iterate.n_cols);
-    double gap = 0;
+  arma::mat gradient(iterate.n_rows, iterate.n_cols);
+  arma::mat s(iterate.n_rows, iterate.n_cols);
+  arma::mat iterateNew(iterate.n_rows, iterate.n_cols);
+  double gap = 0;
 
-    for(size_t i=1; i < maxIterations; ++i)
+  for (size_t i = 1; i != maxIterations; ++i)
+  {
+    // Output current objective function.
+    Log::Info << "Iteration " << i << ", objective "
+        << currentObjective << "." << std::endl;
+
+    // Calculate the gradient.
+    function.Gradient(iterate, gradient);
+
+    // Solve linear constrained problem, solution saved in s.
+    linearConstrSolver.Optimize(gradient, s);
+
+    // Check duality gap for return condition.
+    gap = std::fabs(dot(iterate - s, gradient));
+    if (gap < tolerance)
     {
-    	//Output current objective function
-    	Log::Info << "Iteration " << i << ", objective "
-    			<< CurrentObjective << "." << std::endl;
-
-    	// Reset counter variables.
-    	PreviousObjective = CurrentObjective;
-
-    	// Calculate the gradient
-    	function.Gradient(iterate, gradient);
-
-    	// Solve linear constrained problem, solution saved in s.
-    	linear_constr_solver.Optimize(gradient, s);
+      Log::Info << "FrankWolfe: minimized within tolerance "
+          << tolerance << "; " << "terminating optimization." << std::endl;
+      return currentObjective;
+    }
 
     	// Check duality gap for return condition
     	gap = std::fabs(dot(iterate-s, gradient));
@@ -79,18 +80,16 @@ double FrankWolfe<FunctionType, LinearConstrSolverType, UpdateRuleType>::Optimiz
     		return CurrentObjective;
     	}
 
+    // Update solution, save in iterateNew.
+    updateRule.Update(function, iterate, s, iterateNew, i);
 
-    	// Update solution, save in iterate_new
-    	update_rule.Update(iterate, s, iterate_new, i);
+    iterate = std::move(iterateNew);
+    currentObjective = function.Evaluate(iterate);
+  }
 
-
-    	iterate = iterate_new;
-    	CurrentObjective = function.Evaluate(iterate);
-    }
-    Log::Info << "Frank Wolfe: maximum iterations (" << maxIterations
-    		<< ") reached; " << "terminating optimization." << std::endl;
-    return CurrentObjective;
-
+  Log::Info << "Frank Wolfe: maximum iterations (" << maxIterations
+      << ") reached; " << "terminating optimization." << std::endl;
+  return currentObjective;
 }
 
 

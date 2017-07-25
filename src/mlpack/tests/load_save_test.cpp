@@ -651,12 +651,6 @@ BOOST_AUTO_TEST_CASE(SavePGMBinaryTest)
   remove("test_file.pgm");
 }
 
-// Don't perform any HDF5 tests on Armadillo 4.300-4.400 (inclusive).  A bug
-// causes loading to fail.
-#if ((ARMA_VERSION_MAJOR == 4) && \
-        (ARMA_VERSION_MINOR < 300 || ARMA_VERSION_MINOR > 400)) || \
-    (ARMA_VERSION_MAJOR >= 5)
-
 #if defined(ARMA_USE_HDF5)
 /**
  * Make sure load as HDF5 is successful.
@@ -770,22 +764,6 @@ BOOST_AUTO_TEST_CASE(SaveHDF5Test)
   remove("test_file.hdf5");
   remove("test_file.he5");
 }
-#else
-/**
- * Ensure saving as HDF5 fails.
- */
-BOOST_AUTO_TEST_CASE(NoHDF5Test)
-{
-  arma::mat test;
-  test.randu(5, 5);
-
-  // Stop warnings.
-  BOOST_REQUIRE(data::Save("test_file.h5", test) == false);
-  BOOST_REQUIRE(data::Save("test_file.hdf5", test) == false);
-  BOOST_REQUIRE(data::Save("test_file.hdf", test) == false);
-  BOOST_REQUIRE(data::Save("test_file.he5", test) == false);
-}
-#endif
 
 #endif
 
@@ -1682,7 +1660,7 @@ BOOST_AUTO_TEST_CASE(SimpleARFFCategoricalTest)
   f << endl;
   f << "@attribute three STRING" << endl;
   f << endl;
-  f << "\% a comment line " << endl;
+  f << "% a comment line " << endl;
   f << endl;
   f << "@data" << endl;
   f << "hello, 1, moo" << endl;
@@ -1738,15 +1716,15 @@ BOOST_AUTO_TEST_CASE(HarderARFFTest)
   f << endl;
   f << "@attribute @@@@flfl numeric" << endl;
   f << endl;
-  f << "\% comment" << endl;
+  f << "% comment" << endl;
   f << "@attribute \"hello world\" string" << endl;
   f << "@attribute 12345 integer" << endl;
   f << "@attribute real real" << endl;
-  f << "@attribute \"blah blah blah     \t \" numeric \% comment" << endl;
-  f << "\% comment" << endl;
+  f << "@attribute \"blah blah blah     \t \" numeric % comment" << endl;
+  f << "% comment" << endl;
   f << "@data" << endl;
   f << "1, one, 3, 4.5, 6" << endl;
-  f << "2, two, 4, 5.5, 7 \% comment" << endl;
+  f << "2, two, 4, 5.5, 7 % comment" << endl;
   f << "3, \"three five, six\", 5, 6.5, 8" << endl;
   f.close();
 
@@ -1803,15 +1781,15 @@ BOOST_AUTO_TEST_CASE(BadDatasetInfoARFFTest)
   f << endl;
   f << "@attribute @@@@flfl numeric" << endl;
   f << endl;
-  f << "\% comment" << endl;
+  f << "% comment" << endl;
   f << "@attribute \"hello world\" string" << endl;
   f << "@attribute 12345 integer" << endl;
   f << "@attribute real real" << endl;
-  f << "@attribute \"blah blah blah     \t \" numeric \% comment" << endl;
-  f << "\% comment" << endl;
+  f << "@attribute \"blah blah blah     \t \" numeric % comment" << endl;
+  f << "% comment" << endl;
   f << "@data" << endl;
   f << "1, one, 3, 4.5, 6" << endl;
-  f << "2, two, 4, 5.5, 7 \% comment" << endl;
+  f << "2, two, 4, 5.5, 7 % comment" << endl;
   f << "3, \"three five, six\", 5, 6.5, 8" << endl;
   f.close();
 
@@ -1991,6 +1969,5 @@ BOOST_AUTO_TEST_CASE(LoadCSVNoTransposeTXTTest)
 
   remove("test.txt");
 }
-
 
 BOOST_AUTO_TEST_SUITE_END();

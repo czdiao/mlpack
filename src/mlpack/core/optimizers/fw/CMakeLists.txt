@@ -11,6 +11,7 @@ set(SOURCES
   update_full_correction.hpp
   update_linesearch.hpp
   func_sq.hpp
+  test_func_fw.hpp
 )
 
 set(DIR_SRCS)

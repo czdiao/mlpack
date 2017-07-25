@@ -68,26 +68,26 @@ class ConstrLpBallSolver
 
 
  /**
-  * Optimizer of Linear Constrained Problem for FrankWolfe.
-  *
-  * @param v Input local gradient.
-  * @param s Output optimal solution in the constrained domain (lp ball).
-  */
-  void Optimize(const arma::mat& v, arma::mat& s)
+   * Optimizer of Linear Constrained Problem for FrankWolfe.
+   *
+   * @param v Input local gradient.
+   * @param s Output optimal solution in the constrained domain (lp ball).
+   */
+  void Optimize(const arma::mat& v,
+                arma::mat& s)
   {
-
-    if (p==-1.0)
+    if (p == std::numeric_limits<double>::infinity())
     {
-      // l-inf ball
+      // l-inf ball.
       s = -sign(v);
       if(reg_flag)
         s = s/lambda;   // element-wise division
 
       return;
     }
-    else if(p>1.0)
+    else if (p > 1.0)
     {
-      // lp ball with 1<p<inf
+      // lp ball with 1<p<inf.
       if (reg_flag) {
         s = v/lambda;
       }
@@ -105,9 +105,9 @@ class ConstrLpBallSolver
       }
       return;
     }
-    else if(p==1.0)
+    else if (p == 1.0)
     {
-      // l1 ball, used in OMP
+      // l1 ball, also used in OMP.
       if (reg_flag) {
         s = arma::abs(v/lambda);
       }
@@ -115,9 +115,10 @@ class ConstrLpBallSolver
         s = arma::abs(v);
       }
 
-      arma::uword k = s.index_max();  // linear index of matrix
-      s = 0 * s;
-      s(k) = - sign_double( v(k) );
+      arma::uword k;
+      s.max(k);  // k is the linear index of the largest element.
+      s.zeros();
+      s(k) = - mlpack::math::Sign( v(k) );
       if (reg_flag) {
         s = s/lambda;
       }
@@ -145,8 +146,8 @@ class ConstrLpBallSolver
     
     
  private:
-    
-  //! lp norm, take 1<=p<=inf, use -1 for inf norm.
+  //! lp norm, 1<=p<=inf;
+  //! use std::numeric_limits<double>::infinity() for inf norm.
   double p;
 
   //! Regularization flag
@@ -155,10 +156,6 @@ class ConstrLpBallSolver
   //! Regularization parameter, ideally it should be equal to the lp norm of each atom.
   arma::vec lambda;
 
-  //! Signum function for double.
-  double sign_double(const double x) const {return (x > 0) - (x < 0);}
-
-    
 };
 
 } // namespace optimization
