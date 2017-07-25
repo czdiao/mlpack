@@ -76,72 +76,72 @@ class ConstrLpBallSolver
   void Optimize(const arma::mat& v, arma::mat& s)
   {
 
-	  if (p==-1.0)
-	  {
-		  // l-inf ball
-		  s = -sign(v);
-          if(reg_flag)
-              s = s/lambda;   // element-wise division
-          
-          return;
-	  }
-	  else if(p>1.0)
-	  {
-		  // lp ball with 1<p<inf
-          if (reg_flag) {
-              s = v/lambda;
-          }
-          else {
-              s = v;
-          }
-          
-		  s = -sign(s) % pow(abs(s), p-1);  //element-wise multiplication
-          double q = 1/(1.0-1.0/p);
-          double qnorm = std::pow(arma::accu(pow(abs(s), q)), 1/q);
-          s = s/qnorm;
-          
-          if (reg_flag) {
-              s = s/lambda;
-          }
-          return;
-	  }
-	  else if(p==1.0)
-	  {
-		  // l1 ball, used in OMP
-          if (reg_flag) {
-              s = arma::abs(v/lambda);
-          }
-          else {
-              s = arma::abs(v);
-          }
-          
-		  arma::uword k = s.index_max();  // linear index of matrix
-		  s = 0 * s;
-		  s(k) = - sign_double( v(k) );
-          if (reg_flag) {
-              s = s/lambda;
-          }
-          return;
-	  }
-	  else
-	  {
-		  Log::Fatal << "Wrong norm p!" << std::endl;
-		  return;
-	  }
-      
+    if (p==-1.0)
+    {
+      // l-inf ball
+      s = -sign(v);
+      if(reg_flag)
+        s = s/lambda;   // element-wise division
+
+      return;
+    }
+    else if(p>1.0)
+    {
+      // lp ball with 1<p<inf
+      if (reg_flag) {
+        s = v/lambda;
+      }
+      else {
+        s = v;
+      }
+
+      s = -sign(s) % pow(abs(s), p-1);  //element-wise multiplication
+      double q = 1/(1.0-1.0/p);
+      double qnorm = std::pow(arma::accu(pow(abs(s), q)), 1/q);
+      s = s/qnorm;
+
+      if (reg_flag) {
+        s = s/lambda;
+      }
+      return;
+    }
+    else if(p==1.0)
+    {
+      // l1 ball, used in OMP
+      if (reg_flag) {
+        s = arma::abs(v/lambda);
+      }
+      else {
+        s = arma::abs(v);
+      }
+
+      arma::uword k = s.index_max();  // linear index of matrix
+      s = 0 * s;
+      s(k) = - sign_double( v(k) );
+      if (reg_flag) {
+        s = s/lambda;
+      }
+      return;
+    }
+    else
+    {
+      Log::Fatal << "Wrong norm p!" << std::endl;
+      return;
+    }
+
 
 
   }
 
-    //! Get the p-norm.
-    double P() const { return p; }
-    //! Modify the p-norm.
-    double& P() { return p;}
-    
-    //! Get regularization flag
-    bool RegFlag() const {return reg_flag;}
-    //! Modify regularization flag
-    bool& RegFlag() {return reg_flag;}
+  //! Get the p-norm.
+  double P() const { return p; }
+  //! Modify the p-norm.
+  double& P() { return p;}
+
+  //! Get regularization flag
+  bool RegFlag() const {return reg_flag;}
+  //! Modify regularization flag
+  bool& RegFlag() {return reg_flag;}
     
     
  private:
@@ -155,8 +155,8 @@ class ConstrLpBallSolver
   //! Regularization parameter, ideally it should be equal to the lp norm of each atom.
   arma::vec lambda;
 
-    //! Signum function for double.
-    double sign_double(const double x) const {return (x > 0) - (x < 0);}
+  //! Signum function for double.
+  double sign_double(const double x) const {return (x > 0) - (x < 0);}
 
     
 };

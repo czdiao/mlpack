@@ -1,4 +1,5 @@
 set(SOURCES
+  atoms.hpp
   frank_wolfe.hpp
   frank_wolfe_impl.hpp
   constr_lpball.hpp
@@ -7,6 +8,7 @@ set(SOURCES
   update_classic.hpp
   update_span.hpp
   update_span_impl.hpp
+  update_full_correction.hpp
   update_linesearch.hpp
   func_sq.hpp
 )

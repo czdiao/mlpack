@@ -14,6 +14,7 @@
 #define MLPACK_CORE_OPTIMIZERS_FW_UPDATE_SPAN_HPP
 
 #include <mlpack/prereqs.hpp>
+#include "atoms.hpp"
 
 namespace mlpack {
 namespace optimization {
@@ -65,11 +66,6 @@ class UpdateSpan
     UpdateSpan(FunctionType& function): function(function)
     { /* Do nothing. */ }
 
-    UpdateSpan(FunctionType& function, bool isPrune):
-    function(function),
-    isPrune(isPrune)
-    {/* Do nothing. */}
-
  /**
   * Update rule for FrankWolfe, reoptimize in the span of original solution space.
   * This class also keeps record of all previously used atoms, this function also
@@ -89,43 +85,12 @@ class UpdateSpan
   //! Modify the instantiated function.
   FunctionType& Function() { return function; }
 
-  //! Get the current atom indices.
-  arma::uvec CurrentIndices() const { return current_indices; }
-  //! Modify the current atom indices.
-  arma::uvec& CurrentIndices() { return current_indices; }
-
-  //! Get the current atoms.
-  arma::mat CurrentAtoms() const { return atoms_current; }
-  //! Modify the current atoms.
-  arma::mat& CurrentAtoms() { return atoms_current; }
-
-
 
  private:
-    //! The instantiated function.
-    FunctionType& function;
-
-    //! Current indices.
-    arma::uvec current_indices;
-
-    //! Current atoms.
-    arma::mat atoms_current;
-
-    //! Flag current indices is empty
-    bool isEmpty = true;
-
-    //! Flag for support prune
-    bool isPrune = false;
-    
-    //! Prune the support, delete previous atoms if not necessary.
-    void PruneSupport(const double F, arma::mat& x);
-
-    //! Add atom into the solution space, modify the current_indices and atoms_current.
-    void AddAtom(const arma::uword k);
-
-    //! Given short x, which is the coeff of current atoms, recover the whole vector.
-    arma::vec RecoverVector(const arma::vec& x);
-
+  //! The instantiated function.
+  FunctionType& function;
+  
+  Atoms atoms;
 };
 
 } // namespace optimization
