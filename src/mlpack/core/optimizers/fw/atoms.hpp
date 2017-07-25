@@ -49,19 +49,34 @@ class Atoms
   template<typename FunctionType>
   void ProjectedGradientEnhancement(double tau,
                                     FunctionType& function,
-                                    double stepSize)
+                                    double stepSize,
+                                    size_t maxIteration = 100,
+                                    double tolerance = 1e-3)
   {
     // Gradient Descent.
     arma::mat g;
     arma::mat x;
-    
     RecoverVector(x);
-    function.Gradient(x, g);
-    g = currentAtoms.t() * g;
-    currentCoeffs = currentCoeffs - stepSize * g;
+    double value = function.Evaluate(x);
     
-    // Projection
-    ProjectionToL1(const double tau);
+    for (size_t iter = 1; iter<maxIteration; iter++)
+    {
+      function.Gradient(x, g);
+      g = currentAtoms.t() * g;
+      currentCoeffs = currentCoeffs - stepSize * g;
+
+      // Projection
+      ProjectionToL1(tau);
+
+      RecoverVector(x);
+      double valueNew = function.Evaluate(x);
+
+      if std::abs(value - valueNew) < tolerance
+        break;
+
+      value = valueNew;
+    }
+    
     
   }
   
@@ -147,6 +162,7 @@ class Atoms
     }
     double theta = (tmpSum(rho) - tau)/rho;
     
+    // Threshold on currentCoeffs with theta.
     for (arma::uword j = 0; j< tmp.n_rows; j++)
     {
       if currentCoeffs(j) >=0

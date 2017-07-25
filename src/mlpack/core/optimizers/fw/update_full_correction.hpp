@@ -49,14 +49,12 @@ class UpdateFullCorrection
     double gamma = arma::dot(b - A * old_coords, A * v);
     gamma = gamma / std::pow(arma::norm(A * v, "fro"), 2);
     gamma = std::min(gamma, 1);
-    new_coords = old_coords + gamma * (tau * s - old_coords);
     atoms.CurrentCoeffs() = (1.0-gamma) * atoms.CurrentCoeffs();
     atoms.AddAtom(s, gamma * tau);
 
     // Projected gradient method for enhancement
     atoms.ProjectedGradientEnhancement(tau, function, stepSize);
-    
-
+    atoms.RecoverVector(new_coords);
   }
 
  private:
